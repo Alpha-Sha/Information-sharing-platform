@@ -1,0 +1,134 @@
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Market {
+    
+    address public owner;
+    mapping(address => User) public users;
+    mapping(address => bool) public operators;
+
+    struct User{
+        string name; //姓名
+        string telephone; //电话
+        string sex;
+        string introduce;
+        string email;
+        bool status; //false是未注册 true是已注册
+    }
+
+ 
+
+    struct Info{
+        uint id; //订单id
+        address publisher; //广告发布者
+        uint time; //广告发布时间
+        string imgUrl; //广告图片
+        string describe; //广告描述
+        uint status; //订单状态 0关闭 1审核中 2已上架  
+        
+    }
+
+    Info[] public infos;
+ 
+    event NewInfo(uint id, address publisher, uint time, string imgUrl, string describe); //创建广告
+    event CloseInfo(uint aid); //终止订单项目
+
+    modifier onlyOwner(){
+        require(msg.sender == owner, "You don't have permission");
+        _;
+    }
+
+    modifier onlyOperator(){
+        require(msg.sender == owner, "You don't have permission");
+        _;
+    }
+
+
+
+ 
+
+    constructor() {
+        owner = msg.sender;
+        operators[msg.sender] = true;
+    }
+
+
+    function transferOwner(address _owner) public onlyOwner{
+        owner = _owner;
+    }
+
+    function setOperator(address account, bool status) public onlyOwner{
+        operators[account] = status;
+    }
+
+    // 更新用户信息
+    function updateUser(
+        address account,  
+        string memory _sex, 
+        string memory _introduce,   
+        string memory _name, 
+        string memory _telephone, 
+        string memory _email,
+        bool _status
+    ) public onlyOwner returns(bool){
+      
+        users[account] = User({
+            sex: _sex,
+            introduce: _introduce,
+            name: _name,
+            email: _email,
+            telephone: _telephone,
+            status: _status
+        });
+        return true;
+    }
+
+    
+    
+    // 添加广告
+    function newInfo(string memory _imgUrl, string memory _describe) public returns(bool){
+        uint id = infos.length;
+        require(users[msg.sender].status, "You haven't registered yet");
+        Info memory info = Info({
+            id: id,
+            publisher: msg.sender,
+            time: block.timestamp,
+            imgUrl: _imgUrl,
+            describe: _describe,
+            status: 1
+        });
+        infos.push(info);
+        emit NewInfo(id, msg.sender, block.timestamp, _imgUrl, _describe);
+        return true;
+    }
+
+    // 审核广告
+    function auditInfo(uint _aid, uint _status) public onlyOperator returns(bool){
+        Info storage a = infos[_aid];
+        require(a.status == 1, "The info can not be audit");
+        a.status = _status;
+        return true;
+    }
+
+ 
+ 
+
+ 
+
+    // 关闭广告 
+    function closeInfo(uint _aid) public returns (bool){
+        Info storage a = infos[_aid];
+        require(a.publisher == msg.sender || operators[msg.sender], "You don't have permission");
+        require(a.status == 1 || a.status == 2, "Info can not be closed");
+        a.status = 0;
+        return true;
+    }
+
+ 
+
+     
+    // 总广告长度
+    function infoLength() public view returns(uint){
+        return infos.length;
+    }
+}
