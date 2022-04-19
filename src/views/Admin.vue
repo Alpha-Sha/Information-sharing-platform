@@ -164,7 +164,7 @@ export default {
         await marketContract.methods.setOperator(this.input2Address, status).send({ from: this.account, gas: gasProcessing(gas) });
         this.$message.success('设置成功');
         this.getOperator();
-        this.getWhiteList();
+        //this.getWhiteList();
         this.getOwner();
       } catch (e) {
         this.$message.error(e.message || e + '');
