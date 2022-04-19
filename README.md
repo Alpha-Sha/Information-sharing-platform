@@ -28,3 +28,4 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 "# Information-sharing-platform" 
 "# Information-sharing-platform" 
 "# Information-sharing-platform" 
+"# Information-sharing-platform" 
